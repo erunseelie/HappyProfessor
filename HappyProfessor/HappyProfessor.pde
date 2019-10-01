@@ -16,6 +16,7 @@ private float vy;
 private float ay;
 
 private float pipeX, pipeY;
+private float pipeX1, pipeY1;
 private float pipeVx;
 
 /* Processing always starts with two methods: 
@@ -47,6 +48,7 @@ public void draw()
   fill(255);  
   rect(x, y, 50, 50);
   rect(pipeX,pipeY,50,400);
+  rect(pipeX1,pipeY1,50,400);
   
   // Create other methods to simplify the code in draw(), this is necessary for game draw().
   ellipseMoving();
@@ -70,7 +72,9 @@ public void reset()
   
   //rect position reset
   pipeX = 1000;
-  pipeY = 400;
+  pipeY = 400; 
+  pipeX1 = 1500;
+  pipeY1 = 400;
   pipeVx = -3;
 }
 
@@ -84,6 +88,7 @@ public void ellipseMoving()
 public void rectMoving()
 {
   pipeX += pipeVx;
+  pipeX1 += pipeVx;
 }
 
 public void checkForCollision()
@@ -92,11 +97,15 @@ public void checkForCollision()
   {
     vx = -3;
   }
-  if(((x + 50) > pipeX && (y + 50) > pipeY) && (x < (pipeX + 50) && (y + 50) > pipeY))
+  
+  // This part needs to be fixed
+  else if(((x + 50) >= pipeX && (y + 50) >= pipeY) && (x <= (pipeX + 50) && (y + 50) >= pipeY))
   {
-    //vy = 0;
-    //ay = 0;
+    vy = 0;
+    ay = 0;
   }
+  
+  
   else recover();
 }
 

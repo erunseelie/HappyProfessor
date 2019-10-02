@@ -1,126 +1,195 @@
-/* Things need to do
-*  1. create rect(pipe) as an array.
-*  2. create UI page.
-*  3. create item as an array.
-*  ************ FOR PIPE AND ITEM USE RANDOM DATA*******
-*  4. find out where we can use loop || some other concepts.
-*/
+/* To-Do List:
+ *  1. create rect(pipe) as an array.
+ *  2. create UI page.
+ *  3. create item as an array.
+ *  ************ FOR PIPE AND ITEM USE RANDOM DATA*******
+ *  4. find out where we can use loop || some other concepts.
+ */
 
+// ==================================================
+// Globals
+// ==================================================
 
 private int score;
+private Bird bird;
+private ArrayList<Pipe> pipes;
+private long timeLast = System.currentTimeMillis();
 
-private float x;
-private float y;
-private float vx;
-private float vy;
-private float ay;
+// ==================================================
+// Entities
+// ==================================================
 
-private float pipeX, pipeY;
-private float pipeX1, pipeY1;
-private float pipeVx;
+private abstract class GameEntity {
+  float x, xVel, y;
+  float w, h;
+  protected abstract void drawMe();
+  protected abstract void moveMe(float timeDelta);
+  // return true if there is a collision.
+  protected abstract boolean checkCollision(GameEntity e);
+}
+
+private class Bird extends GameEntity {
+  float yVel, yAcc;
+  // default constructor.
+  private Bird() {
+    this.x = 300;
+    this.y = 80;
+    this.w = 50;
+    this.h = 50;
+    this.xVel = 0;
+    this.yVel = 0;
+    this.yAcc = 0.5; // the "gravity" force.
+  }
+  // method to draw the Bird.
+  void drawMe() {
+    // color the Bird white.
+    fill(255);
+    rect(this.x, this.y, this.w, this.h);
+  }
+  // method to move the Bird.
+  void moveMe(float timeDelta) {
+    this.x += this.xVel;
+    // apply "gravity" force, before adjusting the bird's height.
+    this.yVel += this.yAcc;
+    this.y += this.yVel;
+  }
+  boolean checkCollision(GameEntity e) {
+    if (e instanceof Pipe) {
+      // TODO
+      return false;
+    } else if (e instanceof Item) {
+      // TODO
+      return false;
+    }
+    return false;
+  }
+}
+
+private class Pipe extends GameEntity {
+  // default constructor.
+  // TODO: add alternate constructors for random pipe placement.
+  // TODO: add capability for downward-facing pipes.
+  private Pipe() {
+    this.x = 1000;
+    this.y = 400;
+    this.w = 50;
+    this.h = 400;
+    this.xVel = -3;
+  }
+  private Pipe(int x) {
+    this();
+    this.x = x;
+  }
+  private Pipe(int x, int y) {
+    this();
+    this.x = x;
+    this.y = y;
+  }
+  // method to draw the Pipe.
+  void drawMe() {
+    // color the Pipe green.
+    fill(0, 255, 0);
+    rect(this.x, this.y, this.w, this.h);
+  }
+  // method to move the Pipe.
+  void moveMe(float timeDelta) {
+    this.x += this.xVel;
+    // if the Pipe goes off-screen, reset its position.
+    // TODO: possibly, randomize its position and size accordingly.
+    if (this.x + this.w < 0) {
+      this.x = 1000;
+    }
+  }
+  boolean checkCollision(GameEntity e) {
+    // TODO
+    return false;
+  }
+}
+
+private class Item extends GameEntity {
+  void drawMe() {
+    // TODO
+  }
+  void moveMe(float timeDelta) {
+    // TODO
+  }
+  boolean checkCollision(GameEntity e) {
+    // TODO
+    return false;
+  }
+}
+
+// ==================================================
+// Processing methods
+// ==================================================
 
 /* Processing always starts with two methods: 
-*  setup(): Initilize once the app is opened( Only once).
-*  draw(): Update.
-*  reset(): For game restart purpose, we always use reset() to reset data.
-*/
-public void setup() 
-{
-  reset(); 
-  
-  // Initilize the window size in setup().
-  size(1048, 1024);
-  
-  // Disable the layer.
+ *  setup(): Initialize any specified values when the app is first opened, only once.
+ *  draw(): Visually update any objects based on possible new positions or values.
+ *
+ * Additionally, we use the reset() method:
+ *  reset(): For game restart purposes, we always use reset() to reset data.
+ */
+public void setup() {
+  // Initialize the window size in pixels.
+  size(1000, 700);
+  // Disables drawing objects' outline.
   noStroke();
+
+  reset();
 }
-  
-  
-/* A method that will keep running and updating the changes itself.
-*  Img moving code part should be in here.
-*  Img use the rule of stack. First img will be at the bottom of other img.
-*/
+
+public void reset() {
+  // player score.
+  score = 0;
+
+  // create an empty player Bird entity.
+  bird = new Bird();
+
+  // create an empty Pipe list.
+  pipes = new ArrayList<Pipe>();
+  // create & add a new Pipe object to the list.
+  pipes.add(new Pipe());
+}
+
+/* A method that will keep running and updating each time a new frame is drawn.
+ *  Image-moving code should be placed in here.
+ *  Images use the rule of stacks; each successive image is drawn "on top of" the previous images.
+ */
 public void draw() 
 { 
+  // sets the background color.
   background(51);
-  
-  // Set the following shape(s) to be filled with white. (fill can be used more than once to make each shape different color)
-  fill(255);  
-  rect(x, y, 50, 50);
-  rect(pipeX,pipeY,50,400);
-  rect(pipeX1,pipeY1,50,400);
-  
-  // Create other methods to simplify the code in draw(), this is necessary for game draw().
-  ellipseMoving();
-  rectMoving();
-  checkForCollision();
+
+  // adapted from: https://gamedev.stackexchange.com/a/97948
+  // here in the event we need to decouple physics from framerate.
+  long timeNow = System.currentTimeMillis();
+  float timeDelta = 0.001 * (timeNow - timeLast);
+  if (timeDelta <= 0 || timeDelta > 1.0) {
+    timeDelta = 0.001;
+  }
+
+  for (Pipe p : pipes) {
+    p.moveMe(timeDelta);
+    bird.checkCollision(p);
+  }
+  bird.moveMe(timeDelta);
+
+  // call the Bird drawing method.
+  bird.drawMe();
+  for (Pipe p : pipes) {
+    p.drawMe();
+  }
+
   updateScore();
   statBoard();
+
+  timeLast = timeNow;
 }
 
-public void reset()
-{
-  //stats reset
-  score = 0;
-  
-  //player position reset
-  x = 280;
-  y = 80;
-  vx = 0;
-  vy = 0;
-  ay = 0.5;
-  
-  //rect position reset
-  pipeX = 1000;
-  pipeY = 400; 
-  pipeX1 = 1500;
-  pipeY1 = 400;
-  pipeVx = -3;
-}
-
-public void ellipseMoving()
-{
-  x += vx;
-  vy += ay;
-  y += vy;
-}
-
-public void rectMoving()
-{
-  pipeX += pipeVx;
-  pipeX1 += pipeVx;
-}
-
-public void checkForCollision()
-{
-  if(((x + 50) >= pipeX && x <= (pipeX + 50)) && ((y + 50) > pipeY && y <= (pipeY + 400)))
-  {
-    vx = -3;
-  }
-  
-  // This part needs to be fixed
-  else if(((x + 50) >= pipeX && (y + 50) >= pipeY) && (x <= (pipeX + 50) && (y + 50) >= pipeY))
-  {
-    vy = 0;
-    ay = 0;
-  }
-  
-  
-  else recover();
-}
-
-public void recover()
-{
-  if(x < 280)
-  {
-    vx = 3;
-  }
-  else 
-  {
-    vx = 0;
-    ay = 0.5;
-  }
-}
+// ==================================================
+// UI
+// ==================================================
 
 public void updateScore()
 {
@@ -131,42 +200,40 @@ public void updateScore()
 public void statBoard()
 {
   textSize(32);
-  
+
   fill(204, 102, 0);
-  text("X: " + x, 10, 30); 
-  
+  text("X: " + bird.x, 10, 30); 
+
   fill(0, 102, 153);
-  text("Y: " + y, 10, 60);
-  
+  text("Y: " + bird.y, 10, 60);
+
   fill(204, 102, 0);
   text("Score: " + score, 10, 90);
 }
-  
-  
+
+// ==================================================
+// Inputs
+// ==================================================
+
 /* Basic input that will update the data.
-*  Only variables should be changed in side this method.
-*  Img moving should be in draw() method.
-*  If you want to update img outside draw(), you can use redraw().
-*/
-public void keyPressed() 
-{ 
-  if (key ==TAB || key== ENTER) 
-  {
+ *  Only variables should be changed in side this method.
+ *  Img moving should be in draw() method.
+ *  If you want to update img outside draw(), you can use redraw().
+ */
+public void keyPressed() { 
+  if (key == TAB || key == ENTER) {
     reset();
   }
-  if (key==CODED) 
-  {
-    if (keyCode==UP) 
-    {
-      vy = -10;
+  if (key == CODED) {
+    if (keyCode == UP) {
+      bird.yVel = -10;
     }
   }
 }
 
 void keyReleased() 
 {
-  if (keyCode == UP || keyCode == DOWN) 
-  {
-    //
+  if (keyCode == UP || keyCode == DOWN) {
+    // TODO
   }
 }

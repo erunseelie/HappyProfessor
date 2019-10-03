@@ -56,7 +56,21 @@ private class Bird extends GameEntity {
   boolean checkCollision(GameEntity e) {
     if (e instanceof Pipe) {
       // TODO
-      return false;
+      // A) detecting when the bird is in a position that intersects with an upwards pipe.
+      if (((bird.x + bird.w) >= e.x) && (bird.x <= (e.x + bird.w)) && ((bird.y + bird.h) > e.y) && (bird.y <= (e.y + e.h))) {
+        // if...
+        // 1) bird's right edge is past the pipe's left edge;
+        // 2) bird's left edge is ahead of the pipe's right edge;
+        // 3) bird's base is below the pipe's roof;
+        // 4) bird's roof is above the pipe's base...
+        bird.xVel = -3;
+        return false;
+      } else {
+        // there is no collision, and we reset the bird's y-velocity and y-acceleration to their default values.
+        bird.xVel = (bird.x < 300) ? 3 : 0;
+        bird.yAcc = 0.5;
+        return false;
+      }
     } else if (e instanceof Item) {
       // TODO
       return false;

@@ -73,7 +73,7 @@ function tick(event){var deltaS=event.delta/1000;var l=pipes.getNumChildren();if
 if(bird.y>(ground.y-30)){createjs.Tween.removeTweens(bird);}}
 if(!dead){ground.x=(ground.x-deltaS*300)%ground.tileW;}
 if(started&&!dead){rd=rd+deltaS;if(pipeDelay<0){pipe=new createjs.Bitmap(loader.getResult("pipe"));pipe.x=w+600;pipe.y=(ground.y-gap*2)*Math.random()+gap*1.5;pipes.addChild(pipe);pipe2=new createjs.Bitmap(loader.getResult("pipe"));pipe2.scaleX=-1;pipe2.rotation=180;pipe2.x=pipe.x;pipe2.y=pipe.y-gap;pipes.addChild(pipe2);pipeDelay=masterPipeDelay;}else{pipeDelay=pipeDelay-1*deltaS;}
-for(var i=0;i<l;i++){pipe=pipes.getChildAt(i);if(pipe){if(true){var collision=ndgmr.checkRectCollision(pipe,bird,1,true);if(collision){if(collision.width>8&&collision.height>8){//die();}}}
+for(var i=0;i<l;i++){pipe=pipes.getChildAt(i);if(pipe){if(true){var collision=ndgmr.checkRectCollision(pipe,bird,1,true);if(collision){if(collision.width>8&&collision.height>8){die();}}}
 pipe.x=(pipe.x-deltaS*300);if(pipe.x<=338&&pipe.rotation===0&&pipe.name!="counted"){pipe.name="counted";counter.text=counter.text+1;counterOutline.text=counterOutline.text+1;}
 if(pipe.x+pipe.image.width<=-pipe.w){pipes.removeChild(pipe);}}}
 if(counterShow){counter.alpha=1;counterOutline.alpha=1;counterShow=false;}}

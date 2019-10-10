@@ -73,15 +73,21 @@ private class Bird extends GameEntity {
         // 4) bird's roof is above the pipe's base...
         bird.xVel = -3;
         return true;
-      } else if (((bird.x + bird.w) >= e.x) && (bird.x <= (e.x + e.w)) && ((bird.y + bird.h) > e.y) && ((bird.y + bird.h) <= (e.y + 10))) {
+      } else if (((bird.x + bird.w) >= e.x) && (bird.x <= (e.x + e.w)) && ((bird.y + bird.h) > e.y) && ((bird.y + bird.h) <= (e.y + 20))) {
         // dont know should use 'else if' or 'if'  MAY CAUSE BUG ISSUE.
+        bird.y -= 1;
         bird.yVel = 0;
         bird.yAcc = 0;
+        return true;
+      } else if (((bird.x + bird.w) >= e.x) && (bird.x <= (e.x + e.w)) && ((bird.y < (e.y + e.h)) && (bird.y >= (e.y + e.h - 20)))) {
+
+        // dont know should use 'else if' or 'if'  MAY CAUSE BUG ISSUE.
+        bird.yVel = 0;
         return true;
       } else {
         // there is no collision, and we reset the bird's x-velocity and y-acceleration to their default values.
         bird.recoverMe();
-        if(!isBeginning) bird.yAcc = 0.5;
+        if (!isBeginning) bird.yAcc = 0.5;
         return false;
       }
     } else if (e instanceof Item) {
@@ -93,10 +99,8 @@ private class Bird extends GameEntity {
 
 private class Pipe extends GameEntity {
   // default constructor.
-  // TODO: add alternate constructors for random pipe placement.
-  // TODO: add capability for downward-facing pipes.
   private Pipe() {
-    this.x = 1000;
+    this.x = width;
     this.y = 400;
     this.w = 50;
     this.h = 400;
@@ -128,21 +132,20 @@ private class Pipe extends GameEntity {
     }
   }
 
-  void respawn(){
-  if(pipes.indexOf(this) % 2 == 0)
-      {
-        this.x = 1000;
-        this.w = 50;
-        this.h = 100 + (float)Math.random() * 300;
-        this.y = 0;
-      }
-      else
-      {
-        this.x = 1000;
-        this.w = 50;
-        this.h = 700 - pipes.get(pipes.indexOf(this) - 1).h - 200;
-        this.y = pipes.get(pipes.indexOf(this) - 1).h + 200;
-      }
+  void respawn() {
+    if (pipes.indexOf(this) % 2 == 0)
+    {
+      this.x = width;
+      this.w = 50;
+      this.h = 100 + (float)Math.random() * 300;
+      this.y = 0;
+    } else
+    {
+      this.x = width;
+      this.w = 50;
+      this.h = 700 - pipes.get(pipes.indexOf(this) - 1).h - 200;
+      this.y = pipes.get(pipes.indexOf(this) - 1).h + 200;
+    }
   }
   boolean checkCollision(GameEntity e) {
     // TODO
@@ -163,8 +166,7 @@ private class Item extends GameEntity {
     if (e instanceof Bird) {
       bird = (Bird) e;
       return true;
-    }
-    else return false;
+    } else return false;
   }
 }
 
@@ -219,11 +221,11 @@ public void draw()
   // sets the background color.
   background(51);
   for (int i = 0; i <= height; i++) {
-      float inter = map(i, 0, height, 0, 1);
-      color c = lerpColor(color(0, 0, 200), color(0, 200, 200), inter);
-      stroke(c);
-      line(0, i, width, i);
-    }
+    float inter = map(i, 0, height, 0, 1);
+    color c = lerpColor(color(0, 0, 200), color(0, 200, 200), inter);
+    stroke(c);
+    line(0, i, width, i);
+  }
 
   // adapted from: https://gamedev.stackexchange.com/a/97948
   // here in the event we need to decouple physics from framerate.
@@ -259,9 +261,9 @@ public void draw()
 
 public void updateScore()
 {
-    if(!isBeginning) {
-  //item: score += 100;
-  score += 1;
+  if (!isBeginning) {
+    //item: score += 100;
+    score += 1;
   }
 }
 
@@ -299,7 +301,7 @@ public void keyPressed() {
     if (keyCode == UP && isBeginning) {
       isBeginning = false;
       bird.yAcc = 0.5;
-      for(Pipe p: pipes) p.xVel = -3;
+      for (Pipe p : pipes) p.xVel = -3;
     }
   }
 }

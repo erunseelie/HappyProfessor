@@ -140,14 +140,15 @@ private class Bird extends GameEntity {
       if (this.bb.intersects(e.bb)) {
         this.xVel = -3;
         return true;
+      } else {
+        bird.recoverMe();
+        if (!isBeginning) bird.yAcc = 0.5;
+        return false;
       }
     } else {
       // no collision.
-      this.xVel = 3;
       return false;
     }
-    // we'll never reach this. PDE pls.
-    return false;
   }
 }
 
@@ -218,151 +219,151 @@ private class Item extends GameEntity {
       return true;
     } else { 
       return false;
-    } 
-    return false;
+    }
+  }
+}
+
+// ==================================================
+// Processing methods
+// ==================================================
+
+/* Processing always starts with two methods: 
+ *  setup(): Initialize any specified values when the app is first opened, only once.
+ *  draw(): Visually update any objects based on possible new positions or values.
+ *
+ * Additionally, we use the reset() method:
+ *  reset(): For game restart purposes, we always use reset() to reset data.
+ */
+public void setup() {
+  // Initialize the window size in pixels.
+  size(1000, 700);
+  // Disables drawing objects' outline.
+  noStroke();
+
+  reset();
+}
+
+public void reset() {
+  // player score.
+  score = 0;
+
+  isBeginning = true;
+
+  // create an empty player Bird entity.
+  bird = new Bird();
+
+  // create an empty Pipe list.
+  pipes = new ArrayList<Pipe>();
+  // create & add a new Pipe object to the list.
+  pipes.add(new Pipe(1000, 0, 250));
+  pipes.add(new Pipe(1000, 450, 250));
+  pipes.add(new Pipe(1250, 0, 250));
+  pipes.add(new Pipe(1250, 450, 250));
+  pipes.add(new Pipe(1500, 0, 250));
+  pipes.add(new Pipe(1500, 450, 250));
+  pipes.add(new Pipe(1750, 0, 250));
+  pipes.add(new Pipe(1750, 450, 250));
+}
+
+/* A method that will keep running and updating each time a new frame is drawn.
+ *  Image-moving code should be placed in here.
+ *  Images use the rule of stacks; each successive image is drawn "on top of" the previous images.
+ */
+public void draw() 
+{ 
+  // sets the background color.
+  background(51);
+  // draws a gradient color.
+  for (int i = 0; i <= height; i++) {
+    float inter = map(i, 0, height, 0, 1);
+    color c = lerpColor(color(0, 0, 200), color(0, 200, 200), inter);
+    stroke(c);
+    line(0, i, width, i);
   }
 
-  // ==================================================
-  // Processing methods
-  // ==================================================
+  // adapted from: https://gamedev.stackexchange.com/a/97948
+  // here in the event we need to decouple physics from framerate.
+  long timeNow = System.currentTimeMillis();
+  float timeDelta = 0.001 * (timeNow - timeLast);
+  if (timeDelta <= 0 || timeDelta > 1.0) {
+    timeDelta = 0.001;
+  }
 
-  /* Processing always starts with two methods: 
-   *  setup(): Initialize any specified values when the app is first opened, only once.
-   *  draw(): Visually update any objects based on possible new positions or values.
-   *
-   * Additionally, we use the reset() method:
-   *  reset(): For game restart purposes, we always use reset() to reset data.
-   */
-  public void setup() {
-    // Initialize the window size in pixels.
-    size(1000, 700);
-    // Disables drawing objects' outline.
-    noStroke();
+  for (Pipe p : pipes) {
+    p.moveMe(timeDelta);
+  }
+  for (Pipe p : pipes) {
+    if (bird.checkCollision(p)) break;
+  }
+  bird.moveMe(timeDelta);
 
+  // call the Bird drawing method.
+  bird.drawMe();
+  bird.border(); // check if the bird dies due to border collision.
+  for (Pipe p : pipes) {
+    p.drawMe();
+  }
+
+  updateScore();
+  statBoard();
+
+  timeLast = timeNow;
+}
+
+// ==================================================
+// UI
+// ==================================================
+
+public void updateScore()
+{
+  if (!isBeginning) {
+    //item: score += 100;
+    score += 1;
+  }
+}
+
+public void statBoard()
+{
+  textSize(32);
+
+  fill(204, 102, 0);
+  text("X: " + bird.getX(), 10, 30); 
+
+  fill(0, 102, 153);
+  text("Y: " + bird.getY(), 10, 60);
+
+  fill(204, 102, 0);
+  text("Score: " + score, 10, 90);
+}
+
+// ==================================================
+// Inputs
+// ==================================================
+
+/* Basic input that will update the data.
+ *  Only variables should be changed in side this method.
+ *  Img moving should be in draw() method.
+ *  If you want to update img outside draw(), you can use redraw().
+ */
+public void keyPressed() { 
+  if (key == TAB || key == ENTER) {
     reset();
   }
-
-  public void reset() {
-    // player score.
-    score = 0;
-
-    isBeginning = true;
-
-    // create an empty player Bird entity.
-    bird = new Bird();
-
-    // create an empty Pipe list.
-    pipes = new ArrayList<Pipe>();
-    // create & add a new Pipe object to the list.
-    pipes.add(new Pipe(1000, 0, 250));
-    pipes.add(new Pipe(1000, 450, 250));
-    pipes.add(new Pipe(1250, 0, 250));
-    pipes.add(new Pipe(1250, 450, 250));
-    pipes.add(new Pipe(1500, 0, 250));
-    pipes.add(new Pipe(1500, 450, 250));
-    pipes.add(new Pipe(1750, 0, 250));
-    pipes.add(new Pipe(1750, 450, 250));
-  }
-
-  /* A method that will keep running and updating each time a new frame is drawn.
-   *  Image-moving code should be placed in here.
-   *  Images use the rule of stacks; each successive image is drawn "on top of" the previous images.
-   */
-  public void draw() 
-  { 
-    // sets the background color.
-    background(51);
-    // draws a gradient color.
-    for (int i = 0; i <= height; i++) {
-      float inter = map(i, 0, height, 0, 1);
-      color c = lerpColor(color(0, 0, 200), color(0, 200, 200), inter);
-      stroke(c);
-      line(0, i, width, i);
+  if (key == CODED) {
+    if (keyCode == UP) {
+      bird.yVel = -10;
     }
-
-    // adapted from: https://gamedev.stackexchange.com/a/97948
-    // here in the event we need to decouple physics from framerate.
-    long timeNow = System.currentTimeMillis();
-    float timeDelta = 0.001 * (timeNow - timeLast);
-    if (timeDelta <= 0 || timeDelta > 1.0) {
-      timeDelta = 0.001;
-    }
-
-    for (Pipe p : pipes) {
-      p.moveMe(timeDelta);
-    }
-    for (Pipe p : pipes) {
-      if (bird.checkCollision(p)) break;
-    }
-    bird.moveMe(timeDelta);
-
-    // call the Bird drawing method.
-    bird.drawMe();
-    bird.border(); // check if the bird dies due to border collision.
-    for (Pipe p : pipes) {
-      p.drawMe();
-    }
-
-    updateScore();
-    statBoard();
-
-    timeLast = timeNow;
-  }
-
-  // ==================================================
-  // UI
-  // ==================================================
-
-  public void updateScore()
-  {
-    if (!isBeginning) {
-      //item: score += 100;
-      score += 1;
+    if (keyCode == UP && isBeginning) {
+      isBeginning = false;
+      bird.yAcc = 0.5;
+      for (Pipe p : pipes) p.xVel = -3;
     }
   }
+}
 
-  public void statBoard()
-  {
-    textSize(32);
-
-    fill(204, 102, 0);
-    text("X: " + bird.getX(), 10, 30); 
-
-    fill(0, 102, 153);
-    text("Y: " + bird.getY(), 10, 60);
-
-    fill(204, 102, 0);
-    text("Score: " + score, 10, 90);
+void keyReleased() 
+{
+  if (keyCode == UP || keyCode == DOWN) {
+    // TODO
   }
-
-  // ==================================================
-  // Inputs
-  // ==================================================
-
-  /* Basic input that will update the data.
-   *  Only variables should be changed in side this method.
-   *  Img moving should be in draw() method.
-   *  If you want to update img outside draw(), you can use redraw().
-   */
-  public void keyPressed() { 
-    if (key == TAB || key == ENTER) {
-      reset();
-    }
-    if (key == CODED) {
-      if (keyCode == UP) {
-        bird.yVel = -10;
-      }
-      if (keyCode == UP && isBeginning) {
-        isBeginning = false;
-        bird.yAcc = 0.5;
-        for (Pipe p : pipes) p.xVel = -3;
-      }
-    }
-  }
-
-  void keyReleased() 
-  {
-    if (keyCode == UP || keyCode == DOWN) {
-      // TODO
-    }
-  }
+}

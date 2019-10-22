@@ -90,7 +90,7 @@ private class Bird extends GameEntity {
     this.yAcc = 0; // the "gravity" force.
 
     // load the sprite image for the Bird.
-    this.sprite = loadImage("assets/noctowl.png");
+    this.sprite = loadImage("assets/owl.png");
   }
 
   // method to draw the Bird.

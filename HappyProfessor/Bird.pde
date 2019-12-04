@@ -78,14 +78,10 @@ private class Bird extends GameEntity {
     // if the Bird didn't hit a Pipe, did it hit the Item?
     else if (e instanceof Item) {
       if (((this.x + this.w) >= e.x) && ((this.x + this.w) <= (e.x + 10)) && ((this.y + this.h) > e.y) && (this.y <= (e.y + e.h))) {
-        itemRespawn();
         return true;
       } else if (((this.x + this.w) >= e.x) && (this.x <= (e.x + e.w)) && ((this.y + this.h) > e.y) && ((this.y + this.h) <= (e.y + 20))) {
-
-        itemRespawn();
         return true;
       } else if (((this.x + this.w) >= e.x) && (this.x <= (e.x + e.w)) && ((this.y < (e.y + e.h)) && (this.y >= (e.y + e.h - 20)))) {
-        itemRespawn();
         return true;
       } else return false;
     }

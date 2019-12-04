@@ -44,7 +44,6 @@ public void setup() {
 public void reset() {
   // player score.
   score = 0;
-
   isBeginning = true;
 
   // create an empty player Bird entity.
@@ -55,26 +54,14 @@ public void reset() {
 
   // create an empty Pipe list.
   pipes = new ArrayList<Pipe>();
+  
   // create & add a new Pipe object to the list.
-  pipes.add(new Pipe(500, 0, 250));
-  pipes.add(new Pipe(500, 450, 250));
-  pipes.add(new Pipe(750, 0, 250));
-  pipes.add(new Pipe(750, 450, 250));
-  pipes.add(new Pipe(1000, 0, 250));
-  pipes.add(new Pipe(1000, 450, 250));
-  pipes.add(new Pipe(1250, 0, 250));
-  pipes.add(new Pipe(1250, 450, 250));
-  pipes.add(new Pipe(1500, 0, 250));
-  pipes.add(new Pipe(1500, 450, 250));
-  pipes.add(new Pipe(1750, 0, 250));
-  pipes.add(new Pipe(1750, 450, 250));
-
   //Steudents part I.
-  //for(int i = 0; i <= 5; i++)
-  //{
-  //  pipes.add(new Pipe(1000 + 250*i, 0, 250));
-  //  pipes.add(new Pipe(1000 + 250*i, 450, 250));
-  //}
+  for(int i = 0; i <= 5; i++)
+  {
+    pipes.add(new Pipe(1000 + 250*i, 0, 250, 0));
+    pipes.add(new Pipe(1000 + 250*i, 450, 250, 1));
+  }
 }
 
 /* A method that will keep running and updating each time a new frame is drawn.
@@ -94,27 +81,26 @@ public void draw()
     line(0, i, width, i);
   }
 
-  for (Pipe p : pipes) {
-    p.moveMe();
-  }
+  
   for (Pipe p : pipes) {
     if (bird.checkCollision(p)) break;
   }
-  bird.moveMe();
-
-  // call the Bird drawing method.
-  bird.drawMe();
-
-  if (bird.checkCollision(item)) score += 5;
-  item.moveMe();
-  if (item.x < 0) itemRespawn();
-  item.drawMe();
-
-
   for (Pipe p : pipes) {
+    p.moveMe();
     p.drawMe();
   }
 
+  if (bird.checkCollision(item)){
+    score += 5;
+    itemRespawn();
+  }
+  if (item.x < 0) itemRespawn();
+  item.moveMe();
+  item.drawMe();
+
+  bird.moveMe();
+  // call the Bird drawing method.
+  bird.drawMe();
   // check if bird die or not.
   bird.border();
 
